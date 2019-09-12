@@ -169,6 +169,15 @@ Route::get('get_wechat_access_token','WechaController@get_wechat_access_token');
     Route::get('get_access_token','WechaController@get_access_token');
     Route::get('get_user_list','WechaController@get_user_list');
 Route::get('codes','CodeController@login');
-Route::get('wechat/wechat_login','CodeController@wechat_login');
-Route::get('wechat/code','CodeController@code');
+Route::prefix('wechat')->group(function (){
+    Route::get('wechat_login','CodeController@wechat_login');
+    Route::get('code','CodeController@code');
+    Route::get('upload','WechaController@upload');//上传文件
+    Route::post('do_upload','WechaController@do_upload');
+    Route::get('clear_api','WechaController@clear_api');//调用频次清0
+    Route::get('source','WechaController@wechat_source'); //素材管理
+    Route::get('download_source','WechaController@download_source'); //下载资源
+});
+
+
 
