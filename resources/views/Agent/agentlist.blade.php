@@ -20,7 +20,7 @@
         <tr>
             <td>{{$v->w_id}}</td>
             <td>{{$v->name}}</td>
-            <td><img src="" alt=""></td>
+            <td><img src="{{asset($v->agent_path)}}" alt="" height="100" ></td>
             <td><a href="{{url('wechat/agent_qu')}}?uid={{$v->w_id}}">生成二维码</a></td>
         </tr>
         @endforeach

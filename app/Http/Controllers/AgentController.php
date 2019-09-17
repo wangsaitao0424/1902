@@ -48,7 +48,7 @@ class AgentController extends Controller
         $path='/wechat/qrcode/'.time().rand(1000,9999).'.jpg';
         Storage::put($path, $qrcode_info);
 //        dd($path);
-        DB::connection('mysql_wx')->table('index_wetchat')->where(['w_id'=>Request()->all()['uid']])->update(['agent_path'=>$path]);
+        DB::connection('mysql_wx')->table('index_wetchat')->where(['w_id'=>Request()->all()['uid']])->update(['agent_path'=>'/storage'.$path]);
         return redirect('wechat/agent_list');
     }
 
