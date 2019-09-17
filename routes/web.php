@@ -167,7 +167,7 @@ Route::get('car/getMoney', 'index\CarController@getMoney');
 Route::get('/', 'index\IndexController@index');
 Route::get('get_wechat_access_token','WechaController@get_wechat_access_token');
     Route::get('get_access_token','WechaController@get_access_token');
-    Route::get('get_user_list','WechaController@get_user_list');
+    Route::get('get_user_list{tagid?}','WechaController@get_user_list');
 Route::get('codes','CodeController@login');
 Route::prefix('wechat')->group(function (){
     Route::get('wechat_login','CodeController@wechat_login');
@@ -177,7 +177,19 @@ Route::prefix('wechat')->group(function (){
     Route::get('clear_api','WechaController@clear_api');//调用频次清0
     Route::get('source','WechaController@wechat_source'); //素材管理
     Route::get('download_source','WechaController@download_source'); //下载资源
+    Route::get('tag_list','TagController@tag_list');  //公众号标签列表
+    Route::get('add_tag','TagController@add_tag');
+    Route::post('do_add_tag','TagController@do_add_tag');
+    Route::get('tag_openid_list','TagController@tag_openid_list'); //标签下用户的openid列表
+    Route::post('tag_openid','TagController@tag_openid'); //为用户打标签
+    Route::get('user_tag_list','TagController@user_tag_list'); //用户下的标签列表
+    Route::get('push_tag_message','TagController@push_tag_message'); //推送标签消息
+    Route::post('do_push_tag_message','TagController@do_push_tag_message'); //执行推送标签消息
+
 });
+Route::get('wechat/agent_list','AgentController@agent_list');
+Route::get('wechat/agent_qu','AgentController@agent_qu');
+Route::get('event','EventController@event');
 
 
 

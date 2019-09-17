@@ -22,7 +22,7 @@ class WechaController extends Controller
      */
     public function  clear_api()
     {
-        $url = 'https://api.weixin.qq.com/cgi-bin/clear_quota?access_token='.$this->get_wechat_access_token();
+        $url = 'https://api.weixin.qq.com/cgi-bin/clear_quota?access_token='.$this->tools->get_wechat_access_token();
         $data = ['appid'=>env('APPID')];
         $this->curl_post($url,json_encode($data));
     }
@@ -41,7 +41,7 @@ class WechaController extends Controller
         //$media_id = 'dcgUiQ4LgcdYRovlZqP88dUuf1H6G4Z84rdYXuCmj6s'; //视频
         $media_id = $source_info->media_id;
 //        dd($media_id);
-        $url = 'https://api.weixin.qq.com/cgi-bin/material/get_material?access_token='.$this->get_wechat_access_token();
+        $url = 'https://api.weixin.qq.com/cgi-bin/material/get_material?access_token='.$this->tools->get_wechat_access_token();
         $re = $this->curl_post($url,json_encode(['media_id'=>$media_id]));
 //        dd($re);
         if($source_type != 'video'){
@@ -97,7 +97,7 @@ class WechaController extends Controller
         $pre_page <= 0 && $pre_page = 1;
         $next_page = $page + 1;
         //获取素材列表
-        $url = 'https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token='.$this->get_wechat_access_token();
+        $url = 'https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token='.$this->tools->get_wechat_access_token();
         $data = [
             'type' =>$source_type,
             'offset' => $page == 1 ? 0 : ($page - 1) * 20,
@@ -217,7 +217,7 @@ class WechaController extends Controller
             $storage_path = '/storage/'.$path;
             $path = realpath('./storage/'.$path);
 //            dd($path);
-            $url = 'https://api.weixin.qq.com/cgi-bin/material/add_material?access_token='.$this->get_wechat_access_token().'&type='.$source_type;
+            $url = 'https://api.weixin.qq.com/cgi-bin/material/add_material?access_token='.$this->tools->get_wechat_access_token().'&type='.$source_type;
 //            dd($url);
             //$result = $this->curl_upload($url,$path);
             if($source_type == 'video'){
@@ -242,18 +242,24 @@ class WechaController extends Controller
     /**
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function get_user_list()
+    public function get_user_list(Request $request)
     {
-    	 $result = file_get_contents('https://api.weixin.qq.com/cgi-bin/user/get?access_token='.$this->get_access_token().'&next_openid=');
-        $re = json_decode($result,1);
-        $last_info = [];
-        foreach($re['data']['openid'] as $k=>$v){
-            $user_info = file_get_contents('https://api.weixin.qq.com/cgi-bin/user/info?access_token='.$this->get_wechat_access_token().'&openid='.$v.'&lang=zh_CN');
-            $user = json_decode($user_info,1);
-            $last_info[$k]['nickname'] = $user['nickname'];
-            $last_info[$k]['openid'] = $v;
-        }
-        return view('Wechat.userList',['info'=>$last_info]);
+        $req = $request->all();
+//        dd($req);
+        $openid_info = DB::connection('mysql_wx')->table('index_wetchat')->get();
+//        $result = file_get_contents('https://api.weixin.qq.com/cgi-bin/user/get?access_token='.$this->tools->get_wechat_access_token().'&next_openid=');
+//        $re = json_decode($result,1);
+//        $last_info = [];
+//        foreach($re['data']['openid'] as $k=>$v){
+//            $user_info = file_get_contents('https://api.weixin.qq.com/cgi-bin/user/info?access_token='.$this->tools->get_wechat_access_token().'&openid='.$v.'&lang=zh_CN');
+//            $user = json_decode($user_info,1);
+//            $last_info[$k]['nickname'] = $user['nickname'];
+//            $last_info[$k]['openid'] = $v;
+//        }
+        //dd($last_info);
+        //dd($re['data']['openid']);
+//        dd($openid_info);
+        return view('Wechat.userList',['info'=>$openid_info,'tagid'=>isset($req['tagid'])?$req['tagid']:'']);
     }
 
     /**
@@ -261,49 +267,49 @@ class WechaController extends Controller
      */
     public function get_access_token()
     {
-    	return $this->get_wechat_access_token();
+    	return $this->tools->get_wechat_access_token();
     }
 
     /**
      * access_token
      * @return bool|string
      */
-    public function get_wechat_access_token()
-    {
-    	$redis=new \Redis();
-    	$redis->connect('127.0.0.1','6379');
-    	//加入缓存
-    	$access_token_key='wechat_access_token';
-    	if($redis->exists($access_token_key)){
-    		//存在
-            return $redis->get($access_token_key);
-    	}else{
-    		//不存在
-            $result = file_get_contents('https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx8f7b768865714a34&secret=02e61fe328d2bd4ee6ef48c397c51589');
-            $re = json_decode($result,1);
-            // dd($re);
-            $redis->set($access_token_key,$re['access_token'],$re['expires_in']);  //加入缓存
-            return $re['access_token'];
-    	}
-    }
+//    public function get_wechat_access_token()
+//    {
+//    	$redis=new \Redis();
+//    	$redis->connect('127.0.0.1','6379');
+//    	//加入缓存
+//    	$access_token_key='wechat_access_token';
+//    	if($redis->exists($access_token_key)){
+//    		//存在
+//            return $redis->get($access_token_key);
+//    	}else{
+//    		//不存在
+//            $result = file_get_contents('https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx8f7b768865714a34&secret=02e61fe328d2bd4ee6ef48c397c51589');
+//            $re = json_decode($result,1);
+//            // dd($re);
+//            $redis->set($access_token_key,$re['access_token'],$re['expires_in']);  //加入缓存
+//            return $re['access_token'];
+//    	}
+//    }
 
         /**
          * @param $url
          * @param $data
          */
-        public function curl_post($url,$data)
-        {
-//            echo 11;die;
-            $curl = curl_init($url);
-            curl_setopt($curl,CURLOPT_RETURNTRANSFER,true);
-            curl_setopt($curl,CURLOPT_POST,true);  //发送post
-            curl_setopt($curl,CURLOPT_POSTFIELDS,$data);
-            $data = curl_exec($curl);
-            $errno = curl_errno($curl);  //错误码
-            $err_msg = curl_error($curl); //错误信息
-            curl_close($curl);
-            return $data;
-        }
+//        public function curl_post($url,$data)
+//        {
+//        echo 11;die;
+//            $curl = curl_init($url);
+//            curl_setopt($curl,CURLOPT_RETURNTRANSFER,true);
+//            curl_setopt($curl,CURLOPT_POST,true);  //发送post
+//            curl_setopt($curl,CURLOPT_POSTFIELDS,$data);
+//            $data = curl_exec($curl);
+//            $errno = curl_errno($curl);  //错误码
+//            $err_msg = curl_error($curl); //错误信息
+//            curl_close($curl);
+//            return $data;
+//        }
     /**
      * curl上传微信素材
      * @param $url
